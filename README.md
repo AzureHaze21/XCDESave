@@ -13,6 +13,7 @@ bfsgame0xx.sav: (Single Save File)
 - Inventory structure
 - Items (almost 100%, a few sections of item data are still unidentified)
 - Party: List of characters in Party + total count
+- Arts Levels + Arts Max Unlock Levels
 
 bfsgame0xx.tmb: (Save File Thumbnail Image)
 - Thumbnail image

@@ -89,8 +89,6 @@ namespace XCDESave
     {
         public const uint SIZE = 0x14;
 
-        protected byte[] rawdata;
-
         public ushort Index { get; set; }
         public ItemType Type { get; set; }
         public ItemID FullID { get; set; }
@@ -116,7 +114,6 @@ namespace XCDESave
 
         public Item(byte[] data)
         {
-            rawdata = data;
             Index = BitConverter.ToUInt16(data.GetByteSubArray(LOC["Index"], 2), 0);
             Type = (ItemType)BitConverter.ToUInt16(data.GetByteSubArray(LOC["Type"], 2), 0);
             FullID = new ItemID(data.GetByteSubArray(LOC["FullID"], 4));
@@ -142,6 +139,11 @@ namespace XCDESave
             result.AddRange(BitConverter.GetBytes(Unk_2));
 
             return result.ToArray();
+        }
+
+        public override string ToString()
+        {
+            return $"{(Exists ? 1 : 0)},{Type},{(ushort)FullID.TypeID:D2}-{FullID.ID:D4},{SerialNo}";
         }
     }
 

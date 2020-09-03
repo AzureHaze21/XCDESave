@@ -51,6 +51,15 @@ namespace XCDESave
         Evelen,
         Tentoo
     }
+
+    /*
+    *   Party Structure
+    *   The IDs of each character in the Party + Total Count of characters in Party
+    *
+    *   Offset      Type                    Name                Description
+    *   0x000000    (uint16) Character[12]  Characters          = The IDs of the Characters in party, in order
+    *   0x000018    uint8                   PartyMembersCount   = The No. of Characters in the Party
+    */
     public class Party : ISaveObject
     {
         public const uint SIZE = 25;
