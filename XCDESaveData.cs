@@ -42,7 +42,9 @@ namespace XCDESave
     *   0x038EA0    Item[500]           ArtsManualBox   = Arts Manuals in inventory (500pcs)
     *   0x03B5B0    uint8[0x116590]     Unk_0x03B5B0    = ???   [UNKNOWN, PLEASE INVESTIGATE]
     *   0x151B40    uint32              Money           = Amount of Money
-    *   0x151B44    uint8[0x1D1C]       Unk_0x151B44    = ???   [UNKNOWN, PLEASE INVESTIGATE]
+    *   0x151B44    uint8[0x7D4]        Unk_0x151B44    = ???   [UNKNOWN, PLEASE INVESTIGATE]
+    *   0x152318    Party               Party           = Party structure, No. and IDs of characters in party
+    *   0x152331    uint8[0x152F]       Unk_0x152331    = ???   [UNKNOWN, PLEASE INVESTIGATE]
     */
     public class XCDESaveData : ISaveObject
     {
@@ -139,6 +141,8 @@ namespace XCDESave
             result.AddRange(Unk_0x03B5B0);
             result.AddRange(BitConverter.GetBytes(Money));
             result.AddRange(Unk_0x151B44);
+            result.AddRange(Party.ToRawData());
+            result.AddRange(Unk_0x152331);
             
             return result.ToArray();
         }
