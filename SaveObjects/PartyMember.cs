@@ -24,28 +24,37 @@ namespace XCDESave
     *   PartyMember Structure
     *   Data for an individual Party Member/Player Character
     *
-    *   Offset  Type        Name            Description
-    *   0x000   uint32      Level           = Character's Level
-    *   0x004   uint32      EXP             = Character's amount of EXP
-    *   0x008   uint32      AP              = Character's amount of AP
-    *   0x00C   uint32      AffinityCoins   = Character's No. of Affinity Coins
-    *   0x010   uint8[4]    Unk_1           = ???   [UNKNOWN, PLEASE INVESTIGATE]
-    *   0x014   ItemID      HeadEquip       = Equipped Head Armour Item Type + INDEX in inventory (NOT Item's actual ID)
-    *   0x018   ItemID      TorsoEquip      = Equipped Torso Armour Item Type + INDEX in inventory (NOT Item's actual ID)
-    *   0x01C   ItemID      ArmEquip        = Equipped Arm Armour Item Type + INDEX in inventory (NOT Item's actual ID)
-    *   0x020   ItemID      LegEquip        = Equipped Leg Armour Item Type + INDEX in inventory (NOT Item's actual ID)
-    *   0x024   ItemID      FootEquip       = Equipped Foot Armour Item Type + INDEX in inventory (NOT Item's actual ID)
-    *   0x028   ItemID      WeaponEquip     = Equipped Weapon Item Type + INDEX in inventory (NOT Item's actual ID)
-    *   0x02C   uint8[4]    Unk_2           = ???   [UNKNOWN, PLEASE INVESTIGATE]
-    *   0x030   uint32      HeadCosmetic    = ID of equipped Head Cosmetic
-    *   0x034   uint32      TorsoCosmetic   = ID of equipped Torso Cosmetic
-    *   0x038   uint32      ArmCosmetic     = ID of equipped Arm Cosmetic
-    *   0x03C   uint32      LegCosmetic     = ID of equipped Leg Cosmetic
-    *   0x040   uint32      FootCosmetic    = ID of equipped Foot Cosmetic
-    *   0x044   uint32      WeaponCosmetic  = ID of equipped Weapon Cosmetic
-    *   0x048   uint16[9]   Arts            = IDs of Character's set arts, 1st ID is Talent Art, IDs 2~9 are normal set Arts
-    *   0x05A   uint16[9]   MonadoArts      = same as Arts, but 2nd set for when "Activate Monado" is used
-    *   0x06C   uint8[0xCC] Unk_3           = ???   [UNKNOWN, PLEASE INVESTIGATE]
+    *   Offset  Type        Name                    Description
+    *   0x000   uint32      Level                   = Character's Level
+    *   0x004   uint32      EXP                     = Character's amount of EXP
+    *   0x008   uint32      AP                      = Character's amount of AP
+    *   0x00C   uint32      AffinityCoins           = Character's No. of Affinity Coins
+    *   0x010   uint8[4]    Unk_1                   = ???   [UNKNOWN, PLEASE INVESTIGATE]
+    *   0x014   ItemID      HeadEquip               = Equipped Head Armour Item Type + INDEX in inventory (NOT Item's actual ID)
+    *   0x018   ItemID      TorsoEquip              = Equipped Torso Armour Item Type + INDEX in inventory (NOT Item's actual ID)
+    *   0x01C   ItemID      ArmEquip                = Equipped Arm Armour Item Type + INDEX in inventory (NOT Item's actual ID)
+    *   0x020   ItemID      LegEquip                = Equipped Leg Armour Item Type + INDEX in inventory (NOT Item's actual ID)
+    *   0x024   ItemID      FootEquip               = Equipped Foot Armour Item Type + INDEX in inventory (NOT Item's actual ID)
+    *   0x028   ItemID      WeaponEquip             = Equipped Weapon Item Type + INDEX in inventory (NOT Item's actual ID)
+    *   0x02C   uint8[4]    Unk_2                   = ???   [UNKNOWN, PLEASE INVESTIGATE]
+    *   0x030   uint32      HeadCosmetic            = ID of equipped Head Cosmetic
+    *   0x034   uint32      TorsoCosmetic           = ID of equipped Torso Cosmetic
+    *   0x038   uint32      ArmCosmetic             = ID of equipped Arm Cosmetic
+    *   0x03C   uint32      LegCosmetic             = ID of equipped Leg Cosmetic
+    *   0x040   uint32      FootCosmetic            = ID of equipped Foot Cosmetic
+    *   0x044   uint32      WeaponCosmetic          = ID of equipped Weapon Cosmetic
+    *   0x048   uint16[9]   Arts                    = IDs of Character's set arts, 1st ID is Talent Art, IDs 2~9 are normal set Arts
+    *   0x05A   uint16[9]   MonadoArts              = same as Arts, but 2nd set for when "Activate Monado" is used
+    *   0x06C   uint8[0xC]  Unk_3                   = ???   [UNKNOWN, PLEASE INVESTIGATE]
+    *   0x078   uint32      SelectedSkillTreeIndex  = Index of the Character's Currently Selected Skill Tree
+    *   0x07C   uint32[5]   SkillTreeSPs            = Skill Points (SP) for each of the Character's Skill Trees
+    *   0x090   uint32[5]   SkillTreeUnlockedSkills = The No. of Skills Unlocked in each of the Character's Skill Trees
+    *   0x0A4   uint8[0x25] Unk_4                   = ???   [UNKNOWN, PLEASE INVESTIGATE]
+    *   0x0C9   uint[35]    SkillLinkIDs            = The IDs of each Skill Link Skill on a Character's Skill Link Menu
+    *   0x0EC   uint32      ExpertModeLevel         = Character's Level used for Expert Mode feature
+    *   0x0F0   uint32      ExpertModeEXP           = Character's EXP used for Expert Mode feature
+    *   0x0F4   uint32      ExpertModeReserveEXP    = Character's amount of Reserve EXP saved up for Expert Mode feature
+    *   0x0F8   uint8[0x40] Unk_5                   = ???   [UNKNOWN, PLEASE INVESTIGATE]
     */
     public class PartyMember : ISaveObject
     {
