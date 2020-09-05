@@ -44,7 +44,8 @@ namespace XCDESave
     *   0x151B40    uint32              Money           = Amount of Money
     *   0x151B44    uint8[0x7D4]        Unk_0x151B44    = ???   [UNKNOWN, PLEASE INVESTIGATE]
     *   0x152318    Party               Party           = Party structure, No. and IDs of characters in party
-    *   0x152331    uint8[0x13B7]       Unk_0x152331    = ???   [UNKNOWN, PLEASE INVESTIGATE]
+    *   0x152331    uint8[0x37]         Unk_0x152331    = ???   [UNKNOWN, PLEASE INVESTIGATE]
+    *   0x152368    PartyMember[16]     PartyMembers    = Party Member Character Data
     *   0x1536E8    ArtsLevel[188]      ArtsLevels      = Arts Levels + Unlock Levels for each Art (except Ponspector Arts)
     */
     public class XCDESaveData : ISaveObject
@@ -71,6 +72,7 @@ namespace XCDESave
         public byte[] Unk_0x151B44 { get; set; }
         public Party Party { get; set; }
         public byte[] Unk_0x152331 { get; set; }
+        public PartyMember[] PartyMembers { get; set; } = new PartyMember[16];
         public ArtsLevel[] ArtsLevels { get; set; } = new ArtsLevel[188];
 
         private static readonly Dictionary<string, uint> LOC = new Dictionary<string, uint>()
@@ -95,6 +97,7 @@ namespace XCDESave
             { "Unk_0x151B44", 0x151B44 },
             { "Party", 0x152318 },
             { "Unk_0x152331", 0x152331 },
+            { "PartyMembers", 0x152368 },
             { "ArtsLevels", 0x1536E8 }
         };
 
@@ -119,7 +122,8 @@ namespace XCDESave
             Money = BitConverter.ToUInt32(data.GetByteSubArray(LOC["Money"], 0x4), 0);
             Unk_0x151B44 = data.GetByteSubArray(LOC["Unk_0x151B44"], LOC["Party"] - LOC["Unk_0x151B44"]);
             Party = new Party(data.GetByteSubArray(LOC["Party"], Party.SIZE));
-            Unk_0x152331 = data.GetByteSubArray(LOC["Unk_0x152331"], LOC["ArtsLevels"] - LOC["Unk_0x152331"]);
+            Unk_0x152331 = data.GetByteSubArray(LOC["Unk_0x152331"], LOC["PartyMembers"] - LOC["Unk_0x152331"]);
+            for (uint i = 0; i < PartyMembers.Length; i++) PartyMembers[i] = new PartyMember(data.GetByteSubArray(LOC["PartyMembers"] + (i * PartyMember.SIZE), PartyMember.SIZE));
             for (uint i = 0; i < ArtsLevels.Length; i++) ArtsLevels[i] = new ArtsLevel(data.GetByteSubArray(LOC["ArtsLevels"] + (i * ArtsLevel.SIZE), ArtsLevel.SIZE));
         }
 
@@ -147,6 +151,7 @@ namespace XCDESave
             result.AddRange(Unk_0x151B44);
             result.AddRange(Party.ToRawData());
             result.AddRange(Unk_0x152331);
+            foreach (PartyMember p in PartyMembers) result.AddRange(p.ToRawData());
             foreach (ArtsLevel a in ArtsLevels) result.AddRange(a.ToRawData());
             
             return result.ToArray();

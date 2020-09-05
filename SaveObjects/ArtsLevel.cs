@@ -30,8 +30,8 @@ namespace XCDESave
     *   The Current Level + Max Level Unlocked for an Art
     *
     *   Offset      Type                        Name            Description
-    *   0x000000    uint8                       Level           = The Level of the Art (from 0~12)
-    *   0x000002    (uint8) ArtsLevelUnlocked   MaxLevelUnocked = The Max. Unlocked Level that the Art can be levelled up to in game.
+    *   0x0    uint8                       Level           = The Level of the Art (from 0~12)
+    *   0x2    (uint8) ArtsLevelUnlocked   MaxLevelUnocked = The Max. Unlocked Level that the Art can be levelled up to in game.
     */
     public class ArtsLevel : ISaveObject
     {

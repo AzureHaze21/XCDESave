@@ -4,9 +4,9 @@
     <Company>damysteryman</Company>
     <Copyright>Copyright © 2020 damysteryman</Copyright>
     <Description>Library .dll for handling Xenoblade Chronicles: Definive Edition save files.</Description>
-    <AssemblyVersion>0.0.1.4</AssemblyVersion>
-    <FileVersion>0.0.1.4</FileVersion>
-    <Version>0.0.1.4</Version>
+    <AssemblyVersion>0.1.0.5</AssemblyVersion>
+    <FileVersion>0.1.0.5</FileVersion>
+    <Version>0.1.0.5</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="5.0.0-preview.8.20407.11" />

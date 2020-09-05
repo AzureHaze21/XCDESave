@@ -43,8 +43,8 @@ namespace XCDESave
     *   A combination of an an ID for the Item's type and an ID for the Item itself
     *
     *   Offset  Type    Name        Description
-    *   0x00    uint16  ID       = ID of Item (Ex. 1 = Monado, 4 = Monado II, 642 = Colony Cap, see https://xenoblade.github.io/xb1de/bdat/bdat_common/ITM_itemlist.html)
-    *   0x02    uint16  TypeID   = ID of Item's Type (Ex. 2 = Weapon, 5 = Torso Armour, 10 = Collectable)
+    *   0x0    uint16  ID       = ID of Item (Ex. 1 = Monado, 4 = Monado II, 642 = Colony Cap, see https://xenoblade.github.io/xb1de/bdat/bdat_common/ITM_itemlist.html)
+    *   0x2    uint16  TypeID   = ID of Item's Type (Ex. 2 = Weapon, 5 = Torso Armour, 10 = Collectable)
     */
     public class ItemID : ISaveObject
     {
@@ -66,6 +66,11 @@ namespace XCDESave
             result.AddRange(BitConverter.GetBytes((ushort)TypeID));
 
             return result.ToArray();
+        }
+
+        public override string ToString()
+        {
+            return $"{(ushort)TypeID:D2}-{ID:D4}";
         }
     }
 
@@ -143,7 +148,7 @@ namespace XCDESave
 
         public override string ToString()
         {
-            return $"{(Exists ? 1 : 0)},{Type},{(ushort)FullID.TypeID:D2}-{FullID.ID:D4},{SerialNo}";
+            return $"{(Exists ? 1 : 0)},{Type},{FullID},{SerialNo}";
         }
     }
 
