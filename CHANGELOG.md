@@ -1,5 +1,28 @@
 # CHANGELOG
 
+## v0.2
+
+XCDESaveData.cs, PartyMember.cs:
+
+Added support for the following:
+
+* Party Member: Skill Tree and Expert Mode related data
+    - Skill Tree Selected Index
+    - Skill Points (SP) for each Skill Tree
+    - Skill Tree No. of unlocked skill slots
+    - Skill Link Skills
+    - Expert Mode Level
+    - Expert Mode EXP
+    - Expert Mode Reserve EXP
+
+XCDESaveThumbnail.cs:
+
+* BUGFIX: ReverseBytes() was altering original byte array instead of writing changes to new array
+
+Item.cs:
+
+* UPDATE: Added default constructor for Item
+
 ## v0.1
 Added support for the following:
 

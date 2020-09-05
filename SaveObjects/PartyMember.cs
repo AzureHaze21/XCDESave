@@ -72,6 +72,15 @@ namespace XCDESave
         public ushort[] Arts { get; set; } = new ushort[9];
         public ushort[] MonadoArts { get; set; } = new ushort[9];
         public byte[] Unk_3 { get; set; }
+        public uint SelectedSkillTreeIndex { get; set; }
+        public uint[] SkillTreeSPs { get; set; } = new uint[5];
+        public uint[] SkillTreeUnlockedSkills { get; set; } = new uint[5];
+        public byte[] Unk_4 { get; set; }
+        public byte[] SkillLinkIDs { get; set; } = new byte[35];
+        public uint ExpertModeLevel { get; set; }
+        public uint ExpertModeEXP { get; set; }
+        public uint ExpertModeReserveEXP { get; set; }
+        public byte[] Unk_5 { get; set; }
 
         private static readonly Dictionary<string, uint> LOC = new Dictionary<string, uint>()
         {
@@ -96,6 +105,15 @@ namespace XCDESave
             { "Arts", 0x48 },
             { "MonadoArts", 0x5A },
             { "Unk_3", 0x6C },
+            { "SelectedSkillTreeIndex", 0x78 },
+            { "SkillTreeSPs", 0x7C },
+            { "SkillTreeUnlockedSkills", 0x90 },
+            { "Unk_4", 0xA4 },
+            { "SkillLinkIDs", 0xC9 },
+            { "ExpertModeLevel", 0xEC },
+            { "ExpertModeEXP", 0xF0 },
+            { "ExpertModeReserveEXP", 0xF4 },
+            { "Unk_5", 0xF8 }
         };
 
         public PartyMember(byte[] data)
@@ -120,7 +138,16 @@ namespace XCDESave
             WeaponCosmetic = BitConverter.ToUInt32(data.GetByteSubArray(LOC["WeaponCosmetic"], LOC["Arts"] - LOC["WeaponCosmetic"]), 0);
             for (uint i = 0; i < Arts.Length; i++) Arts[i] = BitConverter.ToUInt16(data.GetByteSubArray(LOC["Arts"] + (i * sizeof(UInt16)), sizeof(UInt16)), 0);
             for (uint i = 0; i < MonadoArts.Length; i++) MonadoArts[i] = BitConverter.ToUInt16(data.GetByteSubArray(LOC["MonadoArts"] + (i * sizeof(UInt16)), sizeof(UInt16)), 0);
-            Unk_3 = data.GetByteSubArray(LOC["Unk_3"], SIZE - LOC["Unk_3"]);
+            Unk_3 = data.GetByteSubArray(LOC["Unk_3"], LOC["SelectedSkillTreeIndex"] - LOC["Unk_3"]);
+            SelectedSkillTreeIndex = BitConverter.ToUInt32(data.GetByteSubArray(LOC["SelectedSkillTreeIndex"], LOC["SkillTreeSPs"] - LOC["SelectedSkillTreeIndex"]), 0);
+            for (uint i = 0; i < SkillTreeSPs.Length; i++) SkillTreeSPs[i] = BitConverter.ToUInt32(data.GetByteSubArray(LOC["SkillTreeSPs"] + (i * sizeof(UInt32)), sizeof(UInt32)), 0);
+            for (uint i = 0; i < SkillTreeUnlockedSkills.Length; i++) SkillTreeUnlockedSkills[i] = BitConverter.ToUInt32(data.GetByteSubArray(LOC["SkillTreeUnlockedSkills"] + (i * sizeof(UInt32)), sizeof(UInt32)), 0);
+            Unk_4 = data.GetByteSubArray(LOC["Unk_4"], LOC["SkillLinkIDs"] - LOC["Unk_4"]);
+            for (uint i = 0; i < SkillLinkIDs.Length; i++) SkillLinkIDs[i] = data[LOC["SkillLinkIDs"] + i];
+            ExpertModeLevel = BitConverter.ToUInt32(data.GetByteSubArray(LOC["ExpertModeLevel"], LOC["ExpertModeEXP"] - LOC["ExpertModeLevel"]), 0);
+            ExpertModeEXP = BitConverter.ToUInt32(data.GetByteSubArray(LOC["ExpertModeEXP"], LOC["ExpertModeReserveEXP"] - LOC["ExpertModeEXP"]), 0);
+            ExpertModeReserveEXP = BitConverter.ToUInt32(data.GetByteSubArray(LOC["ExpertModeReserveEXP"], LOC["Unk_5"] - LOC["ExpertModeReserveEXP"]), 0);
+            Unk_5 = data.GetByteSubArray(LOC["Unk_5"], SIZE - LOC["Unk_5"]);
         }
 
         public byte[] ToRawData()
@@ -148,6 +175,15 @@ namespace XCDESave
             foreach (UInt16 a in Arts) result.AddRange(BitConverter.GetBytes(a));
             foreach (UInt16 a in MonadoArts) result.AddRange(BitConverter.GetBytes(a));
             result.AddRange(Unk_3);
+            result.AddRange(BitConverter.GetBytes(SelectedSkillTreeIndex));
+            foreach (UInt32 sp in SkillTreeSPs) result.AddRange(BitConverter.GetBytes(sp));
+            foreach (UInt32 su in SkillTreeUnlockedSkills) result.AddRange(BitConverter.GetBytes(su));
+            result.AddRange(Unk_4);
+            result.AddRange(SkillLinkIDs);
+            result.AddRange(BitConverter.GetBytes(ExpertModeLevel));
+            result.AddRange(BitConverter.GetBytes(ExpertModeEXP));
+            result.AddRange(BitConverter.GetBytes(ExpertModeReserveEXP));
+            result.AddRange(Unk_5);
 
             return result.ToArray();
         }

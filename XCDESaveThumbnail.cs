@@ -68,9 +68,10 @@ namespace XCDESave
 
         private byte[] ReversePixels(byte[] input)
         {
+            byte[] raw = new byte[input.Length];
             byte[] output = new byte[input.Length];
-            Array.Copy(input, output, input.Length);
-            Array.Reverse(input);
+            Array.Copy(input, raw, input.Length);
+            Array.Reverse(raw);
 
             int row_bytes_count = WIDTH * 3;
             for (int y = 0; y < HEIGHT; y++)
@@ -79,8 +80,8 @@ namespace XCDESave
 
                 for (int x = 0; x < row_bytes_count / 2; x = x + 3)
                 {
-                    byte[] temp = new byte[] { input[start + x], input[start + x + 1], input[start + x + 2] };
-                    Array.Copy(input, start + row_bytes_count - 3 - x, output, start + x, 3);
+                    byte[] temp = new byte[] { raw[start + x], raw[start + x + 1], raw[start + x + 2] };
+                    Array.Copy(raw, start + row_bytes_count - 3 - x, output, start + x, 3);
                     Array.Copy(temp, 0, output, start + row_bytes_count - 3 - x, 3);
                 }
             }

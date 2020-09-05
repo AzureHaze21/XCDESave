@@ -51,6 +51,12 @@ namespace XCDESave
         public const uint size = 4;
         public ushort ID { get; set; }
         public ItemType TypeID { get; set;}
+
+        public ItemID()
+        {
+            TypeID = ItemType.None;
+            ID = 0;
+        }
         
         public ItemID(byte[] data)
         {
@@ -117,6 +123,19 @@ namespace XCDESave
             { "Unk_2", 0x12 },
         };
 
+        public Item()
+        {
+            Index = 0;
+            Type = ItemType.None;
+            FullID = new ItemID();
+            Quantity = 0;
+            Unk_1 = 0;
+            SerialNo = 0;
+            Exists = false;
+            Favourite = false;
+            Unk_2 = 0;
+        }
+
         public Item(byte[] data)
         {
             Index = BitConverter.ToUInt16(data.GetByteSubArray(LOC["Index"], 2), 0);
@@ -148,7 +167,7 @@ namespace XCDESave
 
         public override string ToString()
         {
-            return $"{(Exists ? 1 : 0)},{Type},{FullID},{SerialNo}";
+            return $"{Index},{(Exists ? 1 : 0)},{Type},{FullID},{Quantity},{SerialNo}";
         }
     }
 
