@@ -1,0 +1,32 @@
+<div class="field">
+    <label for="@id">@Label @if (Hint != null) { <span class="hint">@Hint</span> }</label>
+    @if (Stepper)
+    {
+        <div class="stepper">
+            <button type="button" aria-label="Decrease @Label" disabled="@(Value <= Min)" @onclick="() => Set(Value - 1)"><Icon Name="minus" Size="18" /></button>
+            <input id="@id" type="number" min="@Min" max="@Max" value="@Value" @onchange="Changed" />
+            <button type="button" aria-label="Increase @Label" disabled="@(Value >= Max)" @onclick="() => Set(Value + 1)"><Icon Name="plus" Size="18" /></button>
+        </div>
+    }
+    else
+    {
+        <input id="@id" class="input" type="number" min="@Min" max="@Max" value="@Value" @onchange="Changed" />
+    }
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; }
+    [Parameter] public string Hint { get; set; }
+    [Parameter] public long Value { get; set; }
+    [Parameter] public long Min { get; set; }
+    [Parameter] public long Max { get; set; }
+    [Parameter] public bool Stepper { get; set; }
+    [Parameter] public EventCallback<long> ValueChanged { get; set; }
+
+    readonly string id = "n" + Guid.NewGuid().ToString("N")[..8];
+
+    // Clamped so a typed value can never overflow the save field it's written to.
+    Task Set(long value) => ValueChanged.InvokeAsync(Math.Clamp(value, Min, Max));
+
+    Task Changed(ChangeEventArgs e) => long.TryParse(e.Value?.ToString(), out long v) ? Set(v) : Task.CompletedTask;
+}

@@ -1,22 +1,31 @@
+@{ var matches = Matches.ToList(); }
 <div class="picker">
-    <input class="search" placeholder="Search @Label…" @bind="search" @bind:event="oninput" />
-    <div class="picker-list">
-        @foreach (var item in Matches)
-        {
-            <button class="pick" @onclick="() => OnPick.InvokeAsync(item.Id)">
-                <span class="pick-icon">@Icons.For(item.Type)</span>
-                <span class="pick-name">@item.Name</span>
-                <small>#@item.Id</small>
-            </button>
-        }
-        @if (!Matches.Any())
-        {
-            <p class="muted">No match.</p>
-        }
-    </div>
+    <label class="search">
+        <span class="sr">Search @Label</span>
+        <Icon Name="search" Size="18" />
+        <input type="search" placeholder="Search @Label" @bind="search" @bind:event="oninput" />
+    </label>
+    @if (matches.Any())
+    {
+        <ul class="picker-list">
+            @foreach (var item in matches)
+            {
+                <li>
+                    <button type="button" class="pick" @onclick="() => OnPick.InvokeAsync(item.Id)">
+                        <Icon Name="@Icon.For(item.Type)" Size="18" />
+                        <span class="pick-name">@item.Name</span>
+                        <span class="pick-id">#@item.Id</span>
+                    </button>
+                </li>
+            }
+        </ul>
+    }
+    <p class="muted small">@(matches.Count == 0 ? "No match." : matches.Count == LIMIT ? $"First {LIMIT} matches; type to narrow." : $"{matches.Count} matches.") Placeholder entries from the game's item table are hidden.</p>
 </div>
 
 @code {
+    const int LIMIT = 80;
+
     [Parameter] public ItemType Type { get; set; }
     [Parameter] public string Label { get; set; }
     [Parameter] public EventCallback<ushort> OnPick { get; set; }
@@ -26,5 +35,5 @@
     // Rows whose name is just a number are placeholders in the game's item table.
     IEnumerable<(ushort Id, ItemType Type, string Name)> Matches => ItemNames.ALL
         .Where(i => i.Type == Type && !i.Name.All(char.IsDigit) && i.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
-        .Take(80);
+        .Take(LIMIT);
 }

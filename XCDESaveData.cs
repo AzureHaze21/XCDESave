@@ -25,7 +25,9 @@ namespace XCDESave
     *   Save file for Xenoblade Chronchles: Definitive Edition [WORK IN PROGRESS, PLEASE RESEARCH]
     *
     *   Offset      Type                Name            Description
-    *   0x000000    uint8[0x10]         Unk_0x000000    = ???   [UNKNOWN, PLEASE INVESTIGATE]
+    *   0x000000    uint8[4]            Unk_0x000000    = ???   [UNKNOWN, PLEASE INVESTIGATE]
+    *   0x000004    uint32              PlayTimeSeconds = Total play time in seconds [believed, please verify against the in-game load screen]
+    *   0x000008    RealTime            SaveTime        = Real-world date + time the game was saved
     *   0x000010    uint32              Noponstones     = No. of Noponstones
     *   0x000014    uint8[0x3AFC]       Unk_0x000014    = ???   [UNKNOWN, PLEASE INVESTIGATE]
     *   0x003B10    EquipItem[500]      WeaponBox       = Weapons in inventory (500pcs)
@@ -53,6 +55,8 @@ namespace XCDESave
         public Dictionary<uint, string> ItemTypes;
         public const int SIZE = 0x153860;
         public byte[] Unk_0x000000 { get; set; }
+        public uint PlayTimeSeconds { get; set; }
+        public RealTime SaveTime { get; set; }
         public byte[] Unk_0x000014 { get; set; }
         public uint Noponstones { get; set; }
         public EquipItem[] Weapons { get; set; } = new EquipItem[500];
@@ -78,6 +82,8 @@ namespace XCDESave
         private static readonly Dictionary<string, uint> LOC = new Dictionary<string, uint>()
         {
             { "Unk_0x000000", 0x0 },
+            { "PlayTimeSeconds", 0x4 },
+            { "SaveTime", 0x8 },
             { "Noponstones", 0x10 },
             { "Unk_0x000014", 0x14 },
             { "WeaponBox", 0x3B10 },
@@ -103,7 +109,9 @@ namespace XCDESave
 
         public XCDESaveData(byte[] data)
         {
-            Unk_0x000000 = data.GetByteSubArray(LOC["Unk_0x000000"], 0x10);
+            Unk_0x000000 = data.GetByteSubArray(LOC["Unk_0x000000"], LOC["PlayTimeSeconds"] - LOC["Unk_0x000000"]);
+            PlayTimeSeconds = BitConverter.ToUInt32(data.GetByteSubArray(LOC["PlayTimeSeconds"], 0x4), 0);
+            SaveTime = new RealTime(data.GetByteSubArray(LOC["SaveTime"], RealTime.SIZE));
             Noponstones = BitConverter.ToUInt32(data.GetByteSubArray(LOC["Noponstones"], 0x4), 0);
             Unk_0x000014 = data.GetByteSubArray(LOC["Unk_0x000014"], LOC["WeaponBox"] - LOC["Unk_0x000014"]);
             for (uint i = 0; i < Weapons.Length; i++) Weapons[i] = new EquipItem(data.GetByteSubArray(LOC["WeaponBox"] + (i * EquipItem.SIZE), EquipItem.SIZE));
@@ -132,6 +140,8 @@ namespace XCDESave
             List<byte> result = new List<byte>();
 
             result.AddRange(Unk_0x000000);
+            result.AddRange(BitConverter.GetBytes(PlayTimeSeconds));
+            result.AddRange(SaveTime.ToRawData());
             result.AddRange(BitConverter.GetBytes(Noponstones));
             result.AddRange(Unk_0x000014);
             foreach (EquipItem i in Weapons) result.AddRange(i.ToRawData());

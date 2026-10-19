@@ -28,7 +28,7 @@ namespace XCDESave.Editor
             {
                 foreach (Type t in types) TypeDescriptor.AddAttributes(t, new TypeConverterAttribute(converter));
             }
-            Use(typeof(KnownFieldsConverter), typeof(XCDESaveData), typeof(Party), typeof(ArtsLevel));
+            Use(typeof(KnownFieldsConverter), typeof(XCDESaveData), typeof(Party), typeof(ArtsLevel), typeof(RealTime));
             Use(typeof(ItemConverter), typeof(Item), typeof(EquipItem), typeof(CrystalItem));
             Use(typeof(PartyMemberConverter), typeof(PartyMember));
             Use(typeof(ItemIDConverter), typeof(ItemID));
