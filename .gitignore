@@ -196,3 +196,5 @@ ModelManifest.xml
 
 # Glade auto-backup files
 *.glade~
+# Wiki images: copyrighted, local use only
+icons/

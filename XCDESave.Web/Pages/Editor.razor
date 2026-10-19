@@ -1,0 +1,344 @@
+@page "/"
+@inject IJSRuntime JS
+
+<PageTitle>XCDE Save Editor</PageTitle>
+
+<header class="topbar">
+    <h1>XCDE Save Editor</h1>
+    <label class="btn">
+        Open save…
+        <InputFile OnChange="Open" accept=".sav" />
+    </label>
+    @if (save != null)
+    {
+        <button class="btn primary" @onclick="Download">Download @fileName</button>
+        <span class="muted">Keep a backup of the original file.</span>
+    }
+</header>
+
+@if (error != null)
+{
+    <div class="banner error" role="alert">@error</div>
+}
+@if (status != null)
+{
+    <div class="banner ok" role="status">@status</div>
+}
+
+@if (save == null)
+{
+    <main class="empty-state">
+        <p>Open a <code>bfsgame0xx.sav</code> file from Xenoblade Chronicles: Definitive Edition.</p>
+        <p class="muted">The file is read and edited in your browser; it is never uploaded.</p>
+    </main>
+}
+else
+{
+    <nav class="tabs" role="tablist">
+        <button role="tab" class="@(tab == null ? "active" : "")" @onclick="() => SelectTab(null)">👥 Characters</button>
+        @foreach (var box in BOXES)
+        {
+            <button role="tab" class="@(tab == box ? "active" : "")" @onclick="() => SelectTab(box)">@Icons.For(box.Type) @box.Label</button>
+        }
+    </nav>
+
+    <main class="layout">
+        @if (tab == null)
+        {
+            <section class="pane">
+                <div class="row">
+                    @Num("Money", save.Money, uint.MaxValue, v => save.Money = (uint)v)
+                    @Num("Noponstones", save.Noponstones, uint.MaxValue, v => save.Noponstones = (uint)v)
+                </div>
+                <div class="member-list">
+                    @for (int i = 0; i < save.PartyMembers.Length; i++)
+                    {
+                        int index = i;
+                        <button class="member @(member == index ? "selected" : "")" @onclick="() => member = index">
+                            <span>@CharacterName(index)</span>
+                            <small>Lv @save.PartyMembers[index].Level</small>
+                        </button>
+                    }
+                </div>
+            </section>
+            <aside class="panel">
+                @MemberPanel(save.PartyMembers[member])
+            </aside>
+        }
+        else
+        {
+            Item[] items = tab.Get(save);
+            <section class="pane">
+                <div class="row">
+                    <strong>@items.Count(i => i.Exists) / @items.Length used</strong>
+                    @if (tab.Fill != null)
+                    {
+                        <button class="btn" @onclick="() => Fill(tab)">Fill with every @tab.Label.ToLower() (x@(ItemFiller.MAX_QUANTITY))</button>
+                    }
+                </div>
+                <div class="slots">
+                    @for (int i = 0; i < items.Length; i++)
+                    {
+                        int s = i;
+                        Item item = items[s];
+                        <button class="slot @(item.Exists ? "" : "free") @(slot == s ? "selected" : "")" @onclick="() => slot = s"
+                                title="@(item.Exists ? ItemNames.Name(item.FullID.ID) : $"Empty slot {s}")">
+                            @if (item.Exists)
+                            {
+                                <span class="slot-icon">@Icons.For(tab.Type)</span>
+                                <span class="slot-name">@ItemNames.Name(item.FullID.ID)</span>
+                                <span class="slot-qty">x@(item.Quantity)</span>
+                            }
+                            else
+                            {
+                                <span class="slot-num">@s</span>
+                            }
+                        </button>
+                    }
+                </div>
+            </section>
+            <aside class="panel">
+                @if (slot is int sel)
+                {
+                    @SlotPanel(items, sel)
+                }
+                else
+                {
+                    <p class="muted">Click a slot to edit it.</p>
+                }
+            </aside>
+        }
+    </main>
+}
+
+@code {
+    record BoxTab(string Label, ItemType Type, Func<XCDESaveData, Item[]> Get, (int From, int To)[] Fill = null);
+    record GearSlot(string Label, ItemType Type, Func<PartyMember, ItemID> Get, Action<PartyMember, ItemID> Set);
+
+    static readonly BoxTab[] BOXES =
+    {
+        new("Weapons", ItemType.Weapon, s => s.Weapons),
+        new("Head", ItemType.HeadArmour, s => s.HeadArmour),
+        new("Torso", ItemType.TorsoArmour, s => s.TorsoArmour),
+        new("Arms", ItemType.ArmArmour, s => s.ArmArmour),
+        new("Legs", ItemType.LegArmour, s => s.LegArmour),
+        new("Feet", ItemType.FootArmour, s => s.FootArmour),
+        new("Crystals", ItemType.Crystal, s => s.Crystals),
+        new("Gems", ItemType.Gem, s => s.Gems),
+        new("Collectables", ItemType.Collectable, s => s.Collectables, ItemFiller.COLLECTABLES),
+        new("Materials", ItemType.Material, s => s.Materials, ItemFiller.MATERIALS),
+        new("Key Items", ItemType.KeyItem, s => s.KeyItems),
+        new("Arts Manuals", ItemType.ArtsManual, s => s.ArtsManuals, ItemFiller.ARTS_MANUALS),
+    };
+
+    // A party member's *Equip fields hold a SLOT in the matching inventory box, not an item ID.
+    static readonly GearSlot[] GEAR =
+    {
+        new("Weapon", ItemType.Weapon, m => m.WeaponEquip, (m, v) => m.WeaponEquip = v),
+        new("Head", ItemType.HeadArmour, m => m.HeadEquip, (m, v) => m.HeadEquip = v),
+        new("Torso", ItemType.TorsoArmour, m => m.TorsoEquip, (m, v) => m.TorsoEquip = v),
+        new("Arms", ItemType.ArmArmour, m => m.ArmEquip, (m, v) => m.ArmEquip = v),
+        new("Legs", ItemType.LegArmour, m => m.LegEquip, (m, v) => m.LegEquip = v),
+        new("Feet", ItemType.FootArmour, m => m.FootEquip, (m, v) => m.FootEquip = v),
+    };
+
+    XCDESaveData save;
+    string fileName, error, status;
+    BoxTab tab;      // null = Characters tab
+    int? slot;
+    int member;
+
+    async Task Open(InputFileChangeEventArgs e)
+    {
+        error = status = null;
+        try
+        {
+            using var ms = new MemoryStream();
+            await e.File.OpenReadStream(XCDESaveData.SIZE).CopyToAsync(ms);
+            byte[] data = ms.ToArray();
+            XCDESaveData loaded = XCDESaveSerialization.Deserialize(data);
+            // The library must write this file back unchanged, otherwise downloading would silently corrupt it.
+            if (!XCDESaveSerialization.Serialize(loaded).SequenceEqual(data))
+                throw new InvalidDataException("This save does not survive a load/save round-trip through XCDESave unchanged, so editing it is not safe.");
+            save = loaded;
+            fileName = e.File.Name;
+            slot = null;
+            member = 0;
+            status = $"Loaded {fileName}.";
+        }
+        catch (Exception ex)
+        {
+            error = "Could not open save: " + ex.Message;
+        }
+    }
+
+    async Task Download()
+    {
+        error = status = null;
+        byte[] data = XCDESaveSerialization.Serialize(save);
+        if (data.Length != XCDESaveData.SIZE)
+        {
+            error = $"Save data is 0x{data.Length:X} bytes, expected 0x{XCDESaveData.SIZE:X}. Nothing was downloaded.";
+            return;
+        }
+        await JS.InvokeVoidAsync("downloadFile", fileName, data);
+    }
+
+    void SelectTab(BoxTab box)
+    {
+        tab = box;
+        slot = null;
+        status = null;
+    }
+
+    void Fill(BoxTab box)
+    {
+        var (added, noRoom) = ItemFiller.Fill(box.Get(save), box.Type, box.Fill);
+        status = $"Added {added} new {box.Label.ToLower()}; every stack is now at least x{ItemFiller.MAX_QUANTITY}."
+            + (noRoom > 0 ? $" {noRoom} did not fit: the box is full." : "");
+    }
+
+    Item[] BoxOf(ItemType type) => BOXES.First(b => b.Type == type).Get(save);
+
+    static string CharacterName(int memberIndex) => ((Character)(memberIndex + 1)).ToString().Replace('_', ' ');
+
+    // Names of characters whose gear points at this slot; removing it would leave them pointing at nothing.
+    IEnumerable<string> EquippedBy(ItemType type, int s) => Enumerable.Range(0, save.PartyMembers.Length)
+        .Where(i => GEAR.Any(g => g.Type == type && g.Get(save.PartyMembers[i]).TypeID == type && g.Get(save.PartyMembers[i]).ID == s))
+        .Select(CharacterName);
+
+    static ItemID GemAlt(EquipItem e, int n) => n switch { 1 => e.Gem1Alt, 2 => e.Gem2Alt, _ => e.Gem3Alt };
+
+    static void SetGemAlt(EquipItem e, int n, ItemID v)
+    {
+        if (n == 1) e.Gem1Alt = v;
+        else if (n == 2) e.Gem2Alt = v;
+        else e.Gem3Alt = v;
+    }
+
+    static ItemID GemEffect(ushort id) => id == 0 ? new ItemID() : new ItemID { ID = id, TypeID = ItemNames.GEM_EFFECT };
+
+    RenderFragment Num(string label, long value, long max, Action<long> set) =>
+        @<label class="field">
+            <span>@label</span>
+            <input type="number" min="0" max="@max" value="@value"
+                   @onchange="e => { if (long.TryParse(e.Value?.ToString(), out long v)) set(Math.Clamp(v, 0, max)); }" />
+        </label>;
+
+    RenderFragment SlotPanel(Item[] items, int s)
+    {
+        Item item = items[s];
+        if (!item.Exists)
+        {
+            if (tab.Type == ItemType.Crystal || tab.Type == ItemType.Gem)
+                return @<div><h2>Empty slot @s</h2><p class="muted">Crystals and gems are generated by the game with random effects, so adding them here isn't supported.</p></div>;
+
+            return @<div>
+                <h2>Empty slot @s</h2>
+                <p class="muted">Pick an item to put here. Slot index and serial number are filled in for you.</p>
+                <ItemPicker Type="tab.Type" Label="@tab.Label.ToLower()"
+                            OnPick="id => ItemFiller.Put(items, s, id, tab.Type, tab.Type == ItemType.KeyItem || item is EquipItem ? (ushort)1 : ItemFiller.MAX_QUANTITY)" />
+            </div>;
+        }
+
+        var users = EquippedBy(tab.Type, s).ToList();
+        return @<div>
+            <h2><span class="big-icon">@Icons.For(tab.Type)</span> @ItemNames.Name(item.FullID.ID)</h2>
+            <p class="muted">Slot @s · item #@item.FullID.ID · serial @item.SerialNo</p>
+            <div class="row">
+                @Num("Quantity", item.Quantity, ItemFiller.MAX_QUANTITY, v => item.Quantity = (ushort)v)
+                <label class="field check"><input type="checkbox" checked="@item.Favourite" @onchange="e => item.Favourite = (bool)e.Value" /> Favourite</label>
+            </div>
+
+            @if (item is EquipItem equip)
+            {
+                <h3>Equipment</h3>
+                <div class="row">
+                    @Num("Weight", equip.Weight, byte.MaxValue, v => equip.Weight = (byte)v)
+                    @Num("Gem slots", equip.GemSlots, 3, v => equip.GemSlots = (byte)v)
+                </div>
+                @for (int n = 1; n <= 3; n++)
+                {
+                    int gem = n;
+                    ItemID effect = GemAlt(equip, gem);
+                    <details class="gem">
+                        <summary>
+                            Gem @gem: <strong>@(effect.ID == 0 ? "empty" : ItemNames.Name(effect.ID))</strong>
+                            @if (gem > equip.GemSlots) { <small class="muted">(needs @gem gem slots)</small> }
+                        </summary>
+                        <button class="btn small" @onclick="() => SetGemAlt(equip, gem, GemEffect(0))">Clear</button>
+                        <ItemPicker Type="ItemType.Gem" Label="gem effects" OnPick="id => SetGemAlt(equip, gem, GemEffect(id))" />
+                    </details>
+                }
+            }
+            else if (item is CrystalItem crystal)
+            {
+                <h3>Crystal</h3>
+                <p class="muted">Rank @crystal.Rank · element @crystal.Element · @crystal.BuffCount buff(s)</p>
+            }
+
+            <h3>Change item</h3>
+            <details>
+                <summary>Replace with another @tab.Label.ToLower()</summary>
+                <ItemPicker Type="tab.Type" Label="@tab.Label.ToLower()" OnPick="id => item.FullID = new ItemID { ID = id, TypeID = tab.Type }" />
+            </details>
+
+            <h3>Remove</h3>
+            @if (users.Any())
+            {
+                <p class="muted">Equipped by @string.Join(", ", users); unequip it first.</p>
+            }
+            else
+            {
+                <button class="btn danger" @onclick="() => item.Exists = false">Remove from inventory</button>
+            }
+        </div>;
+    }
+
+    RenderFragment MemberPanel(PartyMember m) => @<div>
+        <h2>@CharacterName(member)</h2>
+        <p class="muted">HP, Strength and other stats aren't stored in the save: the game derives them from level, gear and gems.</p>
+        <div class="row">
+            @Num("Level", m.Level, 99, v => m.Level = (uint)v)
+            @Num("EXP", m.EXP, uint.MaxValue, v => m.EXP = (uint)v)
+            @Num("AP", m.AP, uint.MaxValue, v => m.AP = (uint)v)
+            @Num("Affinity coins", m.AffinityCoins, uint.MaxValue, v => m.AffinityCoins = (uint)v)
+        </div>
+        <div class="row">
+            @Num("Expert level", m.ExpertModeLevel, 99, v => m.ExpertModeLevel = (uint)v)
+            @Num("Expert EXP", m.ExpertModeEXP, uint.MaxValue, v => m.ExpertModeEXP = (uint)v)
+            @Num("Reserve EXP", m.ExpertModeReserveEXP, uint.MaxValue, v => m.ExpertModeReserveEXP = (uint)v)
+        </div>
+
+        <h3>Gear</h3>
+        <p class="muted">Lists what's in your inventory. The game normally limits each weapon type to one character.</p>
+        @foreach (var g in GEAR)
+        {
+            Item[] box = BoxOf(g.Type);
+            ItemID current = g.Get(m);
+            Item worn = current.ID < box.Length ? box[current.ID] : null;
+            <label class="field gear">
+                <span>@Icons.For(g.Type) @g.Label</span>
+                <select value="@current.ID" @onchange="e => g.Set(m, new ItemID { ID = ushort.Parse((string)e.Value), TypeID = g.Type })">
+                    @if (worn == null || !worn.Exists)
+                    {
+                        <option value="@current.ID">slot @current.ID (empty)</option>
+                    }
+                    @for (int i = 0; i < box.Length; i++)
+                    {
+                        if (box[i].Exists)
+                        {
+                            <option value="@i">@ItemNames.Name(box[i].FullID.ID) (slot @i)</option>
+                        }
+                    }
+                </select>
+                @if (worn is EquipItem e && e.Exists)
+                {
+                    <small class="muted">
+                        @string.Join(", ", Enumerable.Range(1, 3).Select(n => GemAlt(e, n)).Where(x => x.ID != 0).Select(x => ItemNames.Name(x.ID)).DefaultIfEmpty("no gems"))
+                    </small>
+                }
+            </label>
+        }
+    </div>;
+}
